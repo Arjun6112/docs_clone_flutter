@@ -1,32 +1,58 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const authRouter = require("./routes/auth");
 const cors = require("cors");
+const http = require("http");
+const authRouter = require("./routes/auth");
 const documentRouter = require("./routes/document");
+const Document = require("./models/document");
+
+const PORT = process.env.PORT | 3001;
 
 const app = express();
+var server = http.createServer(app);
+var io = require("socket.io")(server);
 
-const DB =
-  "mongodb+srv://6112arjun:Bbmajor7th@cluster0.be4m4el.mongodb.net/?retryWrites=true&w=majority";
 app.use(cors());
 app.use(express.json());
 app.use(authRouter);
 app.use(documentRouter);
 
+const DB =
+  "mongodb+srv://6112arjun:Bbmajor7th@cluster0.be4m4el.mongodb.net/?retryWrites=true&w=majority";
+
 mongoose
   .connect(DB)
   .then(() => {
-    console.log("Connected to MongoDB");
+    console.log("Connection successful!");
   })
   .catch((err) => {
     console.log(err);
   });
 
-const PORT = 3001;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running on port  http://localhost:${PORT}`);
+io.on("connection", (socket) => {
+  socket.on("join", (documentId) => {
+    socket.join(documentId);
+    console.log("joined room");
+  });
+
+  socket.on("typing", (data) => {
+    socket.broadcast.to(data.room).emit("changes", data);
+  });
+
+  socket.on("save", (data) => {
+    saveData(data);
+  });
+
+  const saveData = async (data) => {
+    let document = await Document.findByIdAndUpdate(data.room, {
+      content: data.delta,
+    });
+    // let document = await Document.findById(data.room);
+    // document.content = data.delta;
+    // document = await document.save();
+  };
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`connected at port ${PORT}`);
 });
