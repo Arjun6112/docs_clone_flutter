@@ -1,1 +1,1 @@
-const host = 'http://localhost:3001';
+const host = 'https://docs-server-thmy.onrender.com';
