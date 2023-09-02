@@ -1,5 +1,4 @@
 import 'package:docs_clone_flutter/models/document_model.dart';
-import 'package:docs_clone_flutter/models/error_model.dart';
 import 'package:docs_clone_flutter/repository/auth_repository.dart';
 import 'package:docs_clone_flutter/repository/document_repository.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,35 +42,52 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              "assets/images/docs-logo.png",
-              height: 30,
+          title: Row(
+            children: [
+              Image.asset(
+                "assets/images/docs-logo.png",
+                height: 30,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text(
+                'Your Documents',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(ref.read(userProvider)!.profilePic),
             ),
             const SizedBox(
               width: 10,
             ),
-            Text(
-              'Your Documents',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
+            IconButton(
+                onPressed: () => createDocument(context, ref),
+                icon: const Icon(Icons.add)),
+            const SizedBox(
+              width: 10,
+            ),
+            IconButton(
+                onPressed: () => signOut(ref), icon: const Icon(Icons.logout))
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.grey.shade500,
+                  width: 0.1,
+                ),
               ),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-              onPressed: () => createDocument(context, ref),
-              icon: const Icon(Icons.add)),
-          const SizedBox(
-            width: 10,
-          ),
-          IconButton(
-              onPressed: () => signOut(ref), icon: const Icon(Icons.logout))
-        ],
-      ),
+          )),
       body: FutureBuilder(
         future: ref.watch(documentRepositoryProvider).getDocuments(
               ref.watch(userProvider)!.token,
